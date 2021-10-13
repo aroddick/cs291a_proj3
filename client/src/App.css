@@ -1,18 +1,48 @@
-.App {
-  text-align: center;
+.chatServer{
+  display: flex;
 }
 
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
+.messages{
+  flex: 8;
+}
+.messagesWrapper {
   display: flex;
   flex-direction: column;
+  justify-content: space-between;
+  position: relative;
+}
+.chatBoxTop {
+  height: 100%;
+  overflow-y: scroll;
+  padding-right: 10px;
+}
+.chatBoxBottom {
+  margin-top: 5px;
+  display: flex;
   align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
+  justify-content: space-between;
+}
+.chatMessageInput {
+  width: 80%;
+  height: 90px;
+  padding: 10px;
+}
+.chatSubmitButton {
+  width: 70px;
+  height: 40px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  background-color: teal;
   color: white;
 }
 
-.App-link {
-  color: #61dafb;
+
+
+.onlineUsers{
+  flex: 2;
+}
+.onlineWrapper {
+  padding: 10px;
+  height: 100%;
 }
