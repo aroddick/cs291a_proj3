@@ -2,7 +2,7 @@
 
 require 'eventmachine'
 require 'sinatra'
-# require 'jwt'
+require 'jwt'
 
 SCHEDULE_TIME = 32
 connections = []
@@ -33,11 +33,12 @@ get '/stream/:token', provides: 'text/event-stream' do
     if(user_stream_token[params['token']][1] == false)
       user_stream_token[params['token']][1] = true
       status 200
-
       headers 'Access-Control-Allow-Origin' => '*'
       stream(:keep_open) do |connection|
         connections << connection
         # connection << "data: Welcome!\n\n"
+
+        # disconnects client
         connection.callback do
           # puts 'callback'
           connections.delete(connection)
@@ -60,7 +61,7 @@ post '/login' do
     status 422
     'Done'
   # was provided
-  elsif( request.params.keys.length == 2 && params['username'] != nil && params['password'] != nil)
+  elsif(request.params.keys.length == 2 && params['username'] != nil && params['password'] != nil)
     # check if username exists in the database
     if(registered.has_key?(params['username']))
       # check if the corresponding password provided matches that of the one stored
@@ -208,6 +209,11 @@ end
 1. ask about message and stream tokens
   you mentioned about jwt 
   ask about storing jwt tokens
+
+
+  use UUID.new for message, stream, and id of sse
+  or with secure random do 
+    SecureRandom.uuid
 
 
         require 'securerandom'
