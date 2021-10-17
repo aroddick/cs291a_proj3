@@ -4,8 +4,31 @@ require 'eventmachine'
 require 'sinatra'
 require 'jwt'
 
-SCHEDULE_TIME = 32
-connections = []
+SCHEDULE_TIME = 3600
+connections = {}
+
+# past hundred messages and sse
+# for join, have
+#   []
+# broadcast_events = [{
+#   "data" => {
+#     "created" => Time.now.to_i,
+#     "user" => username
+#   },
+#   "event" => "Join",
+#   "id" => UUID.new
+# }]
+
+
+broadcast_events = [
+  {"data" => {
+    "created" => Time.now.to_i,
+    "status" => "Server start"
+  },
+  "event" => "ServerStatus",
+  "id" => UUID.new}.to_json
+]
+
 
 # users registered will be placed in hash table
 # key: username
@@ -24,7 +47,17 @@ user_stream_token = {}
 EventMachine.schedule do
   EventMachine.add_periodic_timer(SCHEDULE_TIME) do
     # Change this for any timed events you need to schedule.
-    puts "This message will be output to the server console every #{SCHEDULE_TIME} seconds"
+    # puts "This message will be output to the server console every #{SCHEDULE_TIME} seconds"
+    for connect in connections.values do
+      connect << {
+        "data" => {
+          "created" => Time.now.to_i,
+          "status" => "Server uptime"
+        },
+        "event" => "ServerStatus",
+        "id" => UUID.new
+      }.to_json << '\n\n'
+    end
   end
 end
 
@@ -32,16 +65,56 @@ get '/stream/:token', provides: 'text/event-stream' do
   if(user_stream_token.has_key?(params['token']))
     if(user_stream_token[params['token']][1] == false)
       user_stream_token[params['token']][1] = true
+      username = user_stream_token[params['token']][0]
       status 200
       headers 'Access-Control-Allow-Origin' => '*'
+      # for this current connection at hand
+      # that corresponds to the user with the provided 
+      # stream token
       stream(:keep_open) do |connection|
-        connections << connection
-        # connection << "data: Welcome!\n\n"
+        # since this is the first time the connection is being added, will 
+        # want to notify other streams that new connection was added
+        
+        # broadcast join message to all other users
+        for connect in connections.values do
+          connect << {
+            "data" => {
+              "created" => Time.now.to_i,
+              "user" => username
+            },
+            "event" => "Join",
+            "id" => UUID.new
+          }.to_json << '\n\n'
+        end
 
-        # disconnects client
+        # place past messages into this current connection
+        for message in broadcast_events do
+          connection << message << '\n\n'
+        end
+
+        # place connection into connections
+        connections[:username] = connection
+
+        # this is for the connections which are closed
         connection.callback do
           # puts 'callback'
-          connections.delete(connection)
+          for connect in connections do
+            connect << {
+              "data" => {
+                "created" => Time.now.to_i,
+                "user" => username
+              },
+              "event" => "Part",
+              "id" => UUID.new
+            }.to_json << '\n\n'
+          end
+          connections.delete(username)
+
+          # deletes stream token user pair from db
+          user_stream_token.delete(params['token'])
+          # deletes message token user pair from db
+          user_message_token.delete(user_message_token.key(username))
+
         end
       end
       'Done'
