@@ -35,13 +35,14 @@ broadcast_events = [
 # value: password
 registered = {}
 
-# key: messageToken
-# value: username
+# Decrypt jwt to get both
+# key: username
+# value: uuid
 user_message_token = {}
 
-# key: streamToken
-# value at ind 0: username
-# value at ind 1: if Token used
+# Decrypt jwt to get both
+# key: username
+# value: uuid
 user_stream_token = {}
 
 EventMachine.schedule do

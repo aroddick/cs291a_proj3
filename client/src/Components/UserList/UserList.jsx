@@ -1,11 +1,17 @@
-import React, { Component } from 'react'
+import React, { useState } from 'react'
 
-export default class UserList extends Component {
-    render() {
-        return (
-            <div>
-                
-            </div>
-        )
-    }
+const UserList = () => {
+    const [usernames, setUsernames] = useState([])
+
+    return(
+        <div>
+            <ul>
+                {usernames.map((userName) => (
+                    <li>{userName}</li>
+                ))}
+            </ul>
+        </div>
+    )
 }
+
+export default UserList;
