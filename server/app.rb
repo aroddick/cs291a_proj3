@@ -13,7 +13,7 @@ SCHEDULE_TIME = 3600
 
 # key: username
 # value: connection
-connections = {}
+$connections = {}
 
 # past hundred messages and sse
 # for join, have
@@ -27,14 +27,13 @@ connections = {}
 #   "id" => SecureRandom.uuid
 # }]
 
+id = SecureRandom.uuid
 
-broadcast_events = [
+$broadcast_events = {"#{id}":
   "data: #{{
     "status" => "Server start",
     "created" => Time.now.to_i
-  }.to_json}\nevent: ServerStatus\nid: #{SecureRandom.uuid}\n\n"
-]
-
+  }.to_json}\nevent: ServerStatus\nid: #{id}\n\n"}
 
 # users registered will be placed in hash table
 # key: username
@@ -49,17 +48,84 @@ user_message_token = {}
 # value: username
 user_stream_token = {}
 
+def broadcast_message(id:, event:)
+  for connect in $connections.values do
+    connect << "#{event}"
+  end
+  $broadcast_events[id] = event
+end
+
+def send_message_event(message:)
+  event_id = SecureRandom.uuid
+  message_event = 
+    "data: #{{
+      "user" => user,
+      "message" => message,
+      "created" => Time.now.to_i
+    }.to_json}\nevent: Message\nid: #{event_id}\n\n"
+  broadcast_message(id: event_id, event: message_event)
+end
+
+def send_join_event(username:)
+  event_id = SecureRandom.uuid
+  join_event = 
+    "data: #{{
+      "user" => username,
+      "created" => Time.now.to_i
+    }.to_json}\nevent: Join\nid: #{event_id}\n\n"
+  broadcast_message(id: event_id, event: join_event)
+end
+
+def send_part_event(username:)
+  event_id = SecureRandom.uuid
+  part_event = 
+    "data: #{{
+      "user" => username,
+      "created" => Time.now.to_i
+    }.to_json}\nevent: Part\nid: #{event_id}\n\n"
+  broadcast_message(id: event_id, event: part_event)
+end
+
+def send_kick_event(username1:, username2:)
+  event_id = SecureRandom.uuid
+  kick_event =
+    "data: #{{
+      "status" => "#{username1} kicked #{username2}",
+      "created" => Time.now.to_i
+    }.to_json}\nevent: ServerStatus\nid: #{event_id}\n\n"
+  broadcast_message(id: event_id, event: kick_event)
+end
+
+def send_server_event()
+  event_id = SecureRandom.uuid
+  server_event = 
+    "data: #{{
+      "status" => "Server uptime",
+      "created" => Time.now.to_i
+    }.to_json}\nevent: ServerStatus\nid: #{event_id}\n\n"
+  broadcast_message(id: event_id, event: server_event)
+end
+
+def send_users(connection:, user_stream_token:)
+  event_id = SecureRandom.uuid
+  user_event =
+    "data: #{{
+      "users" => user_stream_token.values.map{ |value| value[0]},
+      "created" => Time.now.to_i
+    }.to_json}\nevent: Users\nid: #{event_id}\n\n"
+  send_message(id: event_id, event: user_event, connection: connection)
+end
+
+def send_message(id:, event:, connection:)
+  connection << event
+  $broadcast_events[id] = event
+end
+
 EventMachine.schedule do
   EventMachine.add_periodic_timer(SCHEDULE_TIME) do
     # Change this for any timed events you need to schedule.
     # puts "This message will be output to the server console every #{SCHEDULE_TIME} seconds"
-    for connect in connections.values do
-      connect << 
-        "data: #{{
-          "status" => "Server uptime",
-          "created" => Time.now.to_i
-        }.to_json}\nevent: ServerStatus\nid: #{SecureRandom.uuid}\n\n"
-    end
+    send_server_event()
   end
 end
 
@@ -73,7 +139,6 @@ end
 options '*' do
   response.headers["Allow"] = "GET, PUT, POST, DELETE, OPTIONS"
   response.headers["Access-Control-Allow-Headers"] = "Authorization, Content-Type, Accept, X-User-Email, X-Auth-Token"
-  response.headers["Access-Control-Allow-Origin"] = "*"
   200
 end
 
@@ -83,7 +148,6 @@ get '/stream/:token', provides: 'text/event-stream' do
       user_stream_token[params['token']][1] = true
       username = user_stream_token[params['token']][0]
       status 200
-      headers 'Access-Control-Allow-Origin' => '*'
       headers 'Connection' => 'keep-alive'
       # for this current connection at hand
       # that corresponds to the user with the provided 
@@ -91,45 +155,39 @@ get '/stream/:token', provides: 'text/event-stream' do
       stream(:keep_open) do |connection|
 
         # connection << "Welcome\n\n"
-        # PP.pp(user_stream_token.values)
         # since this is the first time the connection is being added, will 
         # want to notify other streams that new connection was added
-        connection <<
-          "data: #{{
-            "users" => user_stream_token.values.map{ |value| value[0]},
-            "created" => Time.now.to_i
-          }.to_json}\nevent: Users\nid: #{SecureRandom.uuid}\n\n"
+
+        # Check if user has joined before
+        id = nil
+        match = false
+        if(request.env['HTTP_LAST_EVENT_ID'] != nil && $broadcast_events.has_key?(request.env['HTTP_LAST_EVENT_ID']))
+          id = request.env['HTTP_LAST_EVENT_ID']
+        else
+          match = true
+          send_users(connection: connection, user_stream_token: user_stream_token)
+        end
 
         # place past messages into this current connection
-        # PP.pp(broadcast_events)
-        for message in broadcast_events do
-          connection << message
+        for key, value in $broadcast_events do
+          if(match == true && (value.include?("event: ServerStatus") || value.include?("event: Message")|| (id != nil && !value.include?("event: Disconnect"))))
+            connection << value
+          elsif(id != nil && key == id)
+            match = true
+          end
         end
 
         # place connection into connections
-        connections[username] = connection
+        $connections[username] = connection
 
         # broadcast join message to all other users
-        for connect in connections.values do
-          connect << 
-            "data: #{{
-              "user" => username,
-              "created" => Time.now.to_i
-            }.to_json}\nevent: Join\nid: #{SecureRandom.uuid}\n\n"
-        end
-
+        send_join_event(username: username)
         # this is for the connections which are closed
         connection.callback do
           # puts 'callback'
-          username = connections.key(connection)
-          for connect in connections do
-            connect << 
-              "data: #{{
-                "user" => username,
-                "created" => Time.now.to_i
-              }.to_json}\nevent: Part\nid: #{SecureRandom.uuid}\n\n"
-          end
-          connections.delete(username)
+          username = $connections.key(connection)
+          send_part_event(username: username)
+          $connections.delete(username)
         end
       end
       
@@ -143,8 +201,6 @@ end
 
 post '/login' do
   # if username && password was not provided
-  headers 'Access-Control-Allow-Origin' => '*'
-  PP.pp(params)
   if(params['username'] == nil || params['username'] == "" || params['password'] == nil || params['password'] == "")
     PP.pp("params arent valid");
     status 422
@@ -180,7 +236,6 @@ post '/login' do
     status 201
     
     data = {"message_token" => message_token, "stream_token" => stream_token}
-    PP.pp(data)
     "#{data.to_json}"
   # set of fields do not match expected
   else
@@ -191,10 +246,8 @@ post '/login' do
 end
 
 post '/message' do
-  headers 'Access-Control-Allow-Origin' => '*'
   headers 'Access-Control-Expose-Headers' => 'token'
   # check if message was provided
-  PP.pp(request)
   if(request.params.keys.length == 1 && request.params['message'] != nil && request.params['message'] != "")
     # header not provided
     if(request.env['HTTP_AUTHORIZATION'] == nil)
@@ -208,40 +261,45 @@ post '/message' do
         if(user_stream_token.has_value?([user, true]))
           message = request.params['message']
           messageArray = message.split(' ')
+          event_id = SecureRandom.uuid
           if message == '/quit'
-            disconnectEvent = 
+            connection_to_remove = $connections[user]
+            disconnect_event = 
               "data: #{{
                 "created" => Time.now.to_i
-              }.to_json}\nevent: Disconnect\nid: #{SecureRandom.uuid}\n\n"
-            connection << disconnectEvent
-            connection.close()
+              }.to_json}\nevent: Disconnect\nid: #{event_id}\n\n"
+            send_message(id: event_id, event: disconnect_event, connection: connection_to_remove)
+            connection_to_remove.close()
             # deletes stream token user pair from db
             user_stream_token.delete(user_stream_token.key([user, true]))
             # deletes message token user pair from db
             user_message_token.delete(token)
 
           elsif messageArray[0] == '/kick' && messageArray.length == 2
-            if connections.has_key?(messageArray[1])
-              connectionToRemove = connections[messageArray[1]]
-              connectionToRemove.close()
+            if $connections.has_key?(messageArray[1])
+              connection_to_remove = $connections[messageArray[1]]
+              send_kick_event(username1: user, username2: messageArray[1])
+              user_stream_token[user_stream_token.key([messageArray[1], true])][1] = false
+              connection_to_remove.close()
             else
               status 409
               return
             end
           elsif message == '/reconnect'
-            connectionToRemove = connections[user]
-            connectionToRemove.close()
+            connection_to_remove = $connections[user]
+            user_stream_token[user_stream_token.key([user, true])][1] = false
+            connection_to_remove.close()
           else
             messageEvent = 
               "data: #{{
                 "user" => user,
                 "message" => message,
                 "created" => Time.now.to_i
-              }.to_json}\nevent: Message\nid: #{SecureRandom.uuid}\n\n"
-            connections.values.each do |connection|
+              }.to_json}\nevent: Message\nid: #{event_id}\n\n"
+            $connections.values.each do |connection|
               connection << messageEvent
             end
-            broadcast_events.append(messageEvent)
+            $broadcast_events[event_id] = messageEvent
           end
 
           # deletes previous message token / username stored
@@ -249,9 +307,6 @@ post '/message' do
           # found unique tmpMessage so update
           newToken = SecureRandom.uuid
           user_message_token[newToken] = user
-          PP.pp token
-          PP.pp newToken
-          PP.pp user_message_token
           status 201
           headers "Token" => newToken
         else
@@ -266,10 +321,7 @@ post '/message' do
         end
       else
         puts('message token doesnt exist')
-        PP.pp token
-        PP.pp user_message_token
         status 403
-        
       end
     end
   # message blank or params not match
