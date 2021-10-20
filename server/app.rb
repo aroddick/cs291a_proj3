@@ -143,6 +143,7 @@ options '*' do
 end
 
 get '/stream/:token', provides: 'text/event-stream' do
+  PP.pp(params)
   if(user_stream_token.has_key?(params['token']))
     if(user_stream_token[params['token']][1] == false)
       user_stream_token[params['token']][1] = true
@@ -246,6 +247,8 @@ post '/login' do
 end
 
 post '/message' do
+  headers 'Access-Control-Allow-Origin' => '*'
+  headers 'Access-Control-Request-Method' => '*'
   headers 'Access-Control-Expose-Headers' => 'token'
   # check if message was provided
   if(request.params.keys.length == 1 && request.params['message'] != nil && request.params['message'] != "")
@@ -254,8 +257,10 @@ post '/message' do
       puts('header not provided')
       status 403
     else
+      PP.pp(request.env['HTTP_AUTHORIZATION'])
       authorization = request.env['HTTP_AUTHORIZATION'].split(' ')
       token = authorization[1]
+      PP.pp(token)
       if(user_message_token.has_key?(token))
         user = user_message_token[token]
         if(user_stream_token.has_value?([user, true]))

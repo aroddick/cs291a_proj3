@@ -1,9 +1,10 @@
 import React, { useState, Component } from "react";
 import "./App.css";
 
-import MessageList from "./Components/MessageList/MessageList";
-import UserList from "./Components/UserList/UserList";
+// import MessageList from "./Components/MessageList/MessageList";
+// import UserList from "./Components/UserList/UserList";
 import LoginForm from "./Components/LoginForm/LoginForm";
+import HomePage from "./Components/HomePage";
 import {
     BrowserRouter as Router,
     Switch,
@@ -16,19 +17,6 @@ const App = () => {
     const [streamToken, setStreamToken] = useState("");
     const [messageToken, setMessageToken] = useState("");
 
-    // const server = new EventSource("http://localhost:3001/stream/a");
-    // server.addEventListener("message", (event) => {
-    //     if (event.data === "Goodbye!") {
-    //         console.log("Closing SSE connection");
-    //         server.close();
-    //     } else {
-    //         console.log(event.data);
-    //     }
-    // });
-    // server.onerror = (_event) => {
-    //     console.log("Connection lost, reestablishing");
-    // };
-
     function webURLHandler(newUrl){
         setWebURL(newUrl);
     };
@@ -39,17 +27,36 @@ const App = () => {
         setStreamToken(newStreamToken);
     };
 
-    const userName = "";
     return (
         <Router>
             <Switch>
                 <Route exact path = "/">
-
+                    {streamToken == "" ? <LoginForm webURLHandler={webURLHandler} 
+                        messageTokenHandler={messageTokenHandler} 
+                        streamTokenHandler={streamTokenHandler}/> 
+                        : <HomePage webURL = {webURL}
+                        streamToken = {streamToken}
+                        streamTokenHandler={streamTokenHandler}
+                        messageToken = {messageToken}
+                        messageTokenHandler={messageTokenHandler}/>}
                 </Route>
                 <Route exact path = "/login">
                     <LoginForm webURLHandler={webURLHandler} 
                         messageTokenHandler={messageTokenHandler} 
                         streamTokenHandler={streamTokenHandler}/>
+                    <div>
+                        <ul>
+                            <li>
+                                stream token : {streamToken}
+                            </li>
+                            <li>
+                                message token : {messageToken}
+                            </li>
+                            <li>
+                                weburl : {webURL}
+                            </li>
+                        </ul>
+                    </div>
                 </Route>
                 {/* <Route>
                     <div className="chatServer">
