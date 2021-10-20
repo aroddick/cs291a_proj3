@@ -144,7 +144,9 @@ end
 post '/login' do
   # if username && password was not provided
   headers 'Access-Control-Allow-Origin' => '*'
+  PP.pp(params)
   if(params['username'] == nil || params['username'] == "" || params['password'] == nil || params['password'] == "")
+    PP.pp("params arent valid");
     status 422
     return
   # was provided
@@ -176,11 +178,14 @@ post '/login' do
 
     # 201 with the JSON body
     status 201
+    
     data = {"message_token" => message_token, "stream_token" => stream_token}
+    PP.pp(data)
     "#{data.to_json}"
   # set of fields do not match expected
   else
     # 422 if the set of provided fields do not exactly match the two expected fields
+    PP.pp("fields dont match");
     status 422
   end
 end

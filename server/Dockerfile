@@ -9,4 +9,4 @@ RUN gem install bundler && \
     bundle install
 
 COPY app.rb ./
-CMD exec bundle exec thin start
+CMD exec bundle exec thin -t 1000 start

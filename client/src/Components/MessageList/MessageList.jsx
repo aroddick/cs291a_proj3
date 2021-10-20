@@ -11,7 +11,6 @@ const MessageList = () => {
         e.preventDefault();
         try{
             await axios.post("/message", register);
-            history.push("/login");
         }catch(err){
             console.log(err);
         }
@@ -19,12 +18,7 @@ const MessageList = () => {
     // (data) => setResult(JSON.stringify(data));
     return (
         <form onSubmit={handleSubmit(onSubmit)}>
-            <Headers />
-            <input {...register("firstName")} placeholder="First name" />
-            <input {...register("lastName")} placeholder="Last name" />
-
-            <p>{result}</p>
-            <input type="submit" />
+            
         </form>
     )
 }
