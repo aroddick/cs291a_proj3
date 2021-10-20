@@ -3,26 +3,34 @@ import Form from "react-bootstrap/Form";
 import Button from "react-bootstrap/Button";
 import "./LoginForm.css";
 import axios from 'axios';
+import { useHistory } from "react-router";
+
 
 // if(!response.ok){
-                //     throw new Error(response.status);
-                // }
-                // else{
-                //     if(response.status == 201){ 
-                //         console.log(response.data)
-                //     }
-                // }
+//     throw new Error(response.status);
+// }
+// else{
+//     if(response.status == 201){ 
+//         console.log(response.data)
+//     }
+// }
 
 export default function Login(props) {
     const [webURL, setWebURL] = useState("");
-    const [streamToken, setStreamToken] = useState("");
-    const [messageToken, setMessageToken] = useState("");
+    // const [streamToken, setStreamToken] = useState("");
+    // const [messageToken, setMessageToken] = useState("");
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
+    
+    const history = useHistory();
     function validateForm() {
         return username.length > 0 && password.length > 0;
-    }
-
+    };
+    function handleWebURLChange(event){
+        console.log(event);
+        setWebURL(event.target.value);
+        props.webURLHandler(event.target.value);
+    };
     async function handleSubmit(event) {
         event.preventDefault();
         console.log('You clicked submit');
@@ -36,8 +44,8 @@ export default function Login(props) {
                     // console.log("success");
                     // console.log(response.data);
                     // console.log(response.data.message_token);
-                    setMessageToken(response.data.message_token);
-                    setStreamToken(response.data.stream_token);
+                    props.messageTokenHandler(response.data.message_token);
+                    props.streamTokenHandler(response.data.stream_token);
                     // console.log(streamToken);
                     // console.log(messageToken);
                 }
@@ -45,6 +53,7 @@ export default function Login(props) {
             .catch((error) => {
                 console.log('error: ' + error);
             });
+        history.push('/');
     }
     return (
         <div className="Login">
@@ -55,7 +64,7 @@ export default function Login(props) {
                         type="text"
                         placeholder="Enter URL"
                         value={webURL}
-                        onChange={(e) => setWebURL(e.target.value)}
+                        onChange={(e) => handleWebURLChange(e)}
                     />
                 </Form.Group>
                 <Form.Group size="lg" controlId="text">
@@ -85,7 +94,7 @@ export default function Login(props) {
                     Login
                 </Button>
             </Form>
-            <ul>
+            {/* <ul>
                 <li>
                     username : {username}
                 </li>
@@ -101,7 +110,7 @@ export default function Login(props) {
                 <li>
                     weburl : {webURL}
                 </li>
-            </ul>
+            </ul> */}
         </div>
     );
 }
