@@ -19,13 +19,15 @@ export default function MessageList(props) {
         }})
             .then((response) => {
                 console.log(response);
-                if(response.status == 201){
+                if(response.status === 201){
                     console.log("correct token")
-                    props.messageTokenHandler(response.data.Token);
+                    console.log(response.headers)
+                    // console.log(response.data)
+                    props.messageTokenHandler(response.headers.token);
                 }
-                if(response.status == 409){
+                if(response.status === 409){
                     console.log("incorrect token")
-                    props.messageTokenHandler(response.data.Token);
+                    props.messageTokenHandler(response.headers.token);
                 }
             })
             .catch((error) => {

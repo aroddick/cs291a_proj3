@@ -1,15 +1,12 @@
-import React, { useState, Component } from "react";
+import React, { useState} from "react";
 import "./App.css";
 
-// import MessageList from "./Components/MessageList/MessageList";
-// import UserList from "./Components/UserList/UserList";
 import LoginForm from "./Components/LoginForm/LoginForm";
 import HomePage from "./Components/HomePage";
 import {
     BrowserRouter as Router,
     Switch,
-    Route,
-    Redirect
+    Route
   } from "react-router-dom";
 
 const App = () => {
@@ -31,7 +28,7 @@ const App = () => {
         <Router>
             <Switch>
                 <Route exact path = "/">
-                    {streamToken == "" ? <LoginForm webURLHandler={webURLHandler} 
+                    {streamToken === "" ? <LoginForm webURLHandler={webURLHandler} 
                         messageTokenHandler={messageTokenHandler} 
                         streamTokenHandler={streamTokenHandler}/> 
                         : <HomePage webURL = {webURL}
@@ -58,23 +55,6 @@ const App = () => {
                         </ul>
                     </div>
                 </Route>
-                {/* <Route>
-                    <div className="chatServer">
-                        <div className="messages">
-                            <div className="messagesWrapper">
-                                <div className="chatBoxTop">
-
-                                </div>
-                                <div className="chatBoxBottom">
-                                    <MessageList />
-                                </div>
-                            </div>
-                        </div>
-                        <div className="onlineUsers">
-                            <UserList />
-                        </div>
-                    </div>
-                </Route> */}
             </Switch>
         </Router>
     );

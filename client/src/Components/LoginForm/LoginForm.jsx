@@ -40,15 +40,11 @@ export default function Login(props) {
         await axios.post(webURL + "/login", info)
             .then((response) => {
                 console.log(response);
-                if(response.status == 201){
-                    // console.log("success");
-                    // console.log(response.data);
-                    // console.log(response.data.message_token);
+                if(response.status === 201){
                     props.messageTokenHandler(response.data.message_token);
                     props.streamTokenHandler(response.data.stream_token);
-                    // console.log(streamToken);
-                    // console.log(messageToken);
                 }
+                // give error for other status codes prevent login
             })
             .catch((error) => {
                 console.log('error: ' + error);
@@ -94,23 +90,6 @@ export default function Login(props) {
                     Login
                 </Button>
             </Form>
-            {/* <ul>
-                <li>
-                    username : {username}
-                </li>
-                <li>
-                    stream token : {streamToken}
-                </li>
-                <li>
-                    message token : {messageToken}
-                </li>
-                <li>
-                    password : {password}
-                </li>
-                <li>
-                    weburl : {webURL}
-                </li>
-            </ul> */}
         </div>
     );
 }
