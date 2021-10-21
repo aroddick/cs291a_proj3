@@ -16,7 +16,6 @@ export default function HomePage() {
   const [streamToken, setStreamToken] = useState(null);
   const [messageToken, setMessageToken] = useState(null);
 
-
   function webURLHandler(newUrl) {
     setWebURL(newUrl);
   };
