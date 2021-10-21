@@ -1,15 +1,22 @@
 import React, { useState } from 'react'
 
-const UserList = ({ usernames }) => {
+export default function UserList(props) {
+
+  const temp = [...props.users];
+  if(props.userToDelete !== ""){
+    let index = props.users.findIndex(x => x === props.userToDelete);
+    temp.splice(index, 1);
+    props.handleRemoveItem(temp);
+  }
+
   return (
     <div>
-      {usernames && <ul>
-        {usernames.map((userName) => (
-          <li>{userName}</li>
-        ))}
-      </ul>}
+      <ul>
+          {temp.map((user) => (
+            <li>{user}</li>
+            ))
+          }
+      </ul>
     </div>
   )
 }
-
-export default UserList

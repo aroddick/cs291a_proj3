@@ -5,15 +5,17 @@ import UserList from './UserList/UserList';
 import Login from './LoginForm/LoginForm';
 import { useHistory } from "react-router";
 
-export default function HomePage(props) {
+export default function HomePage() {
 
   const [messages, setMessages] = useState([]);
   const [users, setUsers] = useState([]);
-  const history = useHistory()
+  const history = useHistory();
+  const [userToDelete, setUserToDelete] = useState("");
 
   const [webURL, setWebURL] = useState("");
   const [streamToken, setStreamToken] = useState(null);
   const [messageToken, setMessageToken] = useState(null);
+
 
   function webURLHandler(newUrl) {
     setWebURL(newUrl);
@@ -50,12 +52,14 @@ export default function HomePage(props) {
       const format = date_format(obj['created']);
       const message = (format + "JOIN: " + obj['user']);
       setMessages(messages => [...messages, message]);
+      setUsers(users => [...users, obj['user']]);
     });
     server.addEventListener("Part", (event) => {
       const obj = JSON.parse(event.data);
       const format = date_format(obj['created']);
       const message = (format + "PART: " + obj['user']);
       setMessages(messages => [...messages, message]);
+      setUserToDelete(obj['user']);
     });
     server.addEventListener("Disconnect", (event) => {
       console.log("Closing SSE connection");
@@ -67,10 +71,28 @@ export default function HomePage(props) {
     };
   }, streamToken);
 
+  useEffect(() => {
+    window.addEventListener("beforeunload", alertUser);
+    return () => {
+      window.removeEventListener("beforeunload", alertUser);
+    };
+  }, []);
+  const alertUser = (e) => {
+    console.log("alert")
+    e.preventDefault();
+    e.returnValue = "";
+  };
+
+  function handleRemoveItem (userList){
+    setUserToDelete("")
+    setUsers(userList);
+  };
+
   function date_format(timestamp) {
     var date = new Date(timestamp * 1000);
     return date.toLocaleDateString("en-US") + " " + date.toLocaleTimeString("en-US");
-  }
+  };
+
   return (
     <div>
       {streamToken === null && <Login webURLHandler={webURLHandler}
@@ -80,7 +102,9 @@ export default function HomePage(props) {
       <Compose webURL={webURL}
         messageToken={messageToken}
         messageTokenHandler={messageTokenHandler} />
-      <UserList usernames={users} />
+      <UserList usernames={users} 
+                handleRemoveItem = {handleRemoveItem}
+                userToDelete = {userToDelete}/>
     </div>
   );
 }
