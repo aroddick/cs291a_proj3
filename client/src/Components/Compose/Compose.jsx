@@ -2,9 +2,11 @@ import React, { useState } from "react";
 import Form from "react-bootstrap/Form";
 import Button from "react-bootstrap/Button";
 import axios from 'axios';
+import { useAlert } from 'react-alert';
 
 export default function Compose(props) {
   const [message, setMessage] = useState("");
+  const alert = useAlert()
   async function handleSubmit(event) {
     event.preventDefault();
     console.log('You clicked submit');
@@ -34,6 +36,7 @@ export default function Compose(props) {
       })
       .catch((error) => {
         console.log('error: ' + error);
+        alert.error("Error message")
       });
   }
   return (

@@ -1,8 +1,6 @@
 import React, { useState } from 'react'
 
 const UserList = ({ usernames }) => {
-  // const [usernames, setUsernames] = useState([])
-
   return (
     <div>
       {usernames && <ul>
@@ -14,4 +12,4 @@ const UserList = ({ usernames }) => {
   )
 }
 
-export default UserList;
+export default UserList

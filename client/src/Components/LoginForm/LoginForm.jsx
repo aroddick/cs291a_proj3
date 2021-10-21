@@ -4,28 +4,16 @@ import Button from "react-bootstrap/Button";
 import "./LoginForm.css";
 import axios from 'axios';
 import { useHistory } from "react-router";
-
-
-// if(!response.ok){
-//     throw new Error(response.status);
-// }
-// else{
-//     if(response.status == 201){ 
-//         console.log(response.data)
-//     }
-// }
+import { useAlert } from 'react-alert';
 
 export default function Login(props) {
     const [webURL, setWebURL] = useState("");
-    // const [streamToken, setStreamToken] = useState("");
-    // const [messageToken, setMessageToken] = useState("");
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
     
     const history = useHistory();
-    function validateForm() {
-        return username.length > 0 && password.length > 0;
-    };
+    const alert = useAlert();
+
     function handleWebURLChange(event){
         console.log(event);
         setWebURL(event.target.value);
@@ -40,14 +28,31 @@ export default function Login(props) {
         await axios.post(webURL + "/login", info)
             .then((response) => {
                 console.log(response);
+                console.log(response.status);
                 if(response.status === 201){
+                    console.log("login successful");
+                    alert.success("login successful");
                     props.messageTokenHandler(response.data.message_token);
                     props.streamTokenHandler(response.data.stream_token);
                 }
-                // give error for other status codes prevent login
             })
             .catch((error) => {
-                console.log('error: ' + error);
+                if(error.response.status === 422){
+                    console.log("params arent valid");
+                    alert.error("params arent valid");
+                }
+                else if(error.response.status === 403){
+                    console.log("inputted username/password is incorrect");
+                    alert.error("inputted username/password is incorrect");
+                }
+                else if(error.response.status === 409){
+                    console.log("stream already opened");
+                    alert.error("stream already opened");
+                }
+                else if(error.response.status === 422){
+                    console.log("provided fields dont match");
+                    alert.error("provided fields dont match");
+                }
             });
         history.push('/');
     }
@@ -85,8 +90,7 @@ export default function Login(props) {
                 <Button 
                     block 
                     size="lg" 
-                    type="submit" 
-                    disabled={!validateForm()}>
+                    type="submit" >
                     Login
                 </Button>
             </Form>

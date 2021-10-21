@@ -2,13 +2,15 @@ import React, { useState, useEffect } from 'react'
 import MessageList from './MessageList/MessageList';
 import Compose from "./Compose/Compose";
 import UserList from './UserList/UserList';
-import { Container, Row, Col } from "react-bootstrap";
 import Login from './LoginForm/LoginForm';
+import {Container, Row, Col} from "react-bootstrap";
+import { useHistory } from "react-router";
 
 export default function HomePage(props) {
 
   const [messages, setMessages] = useState([]);
   const [users, setUsers] = useState([]);
+  const history = useHistory()
 
   const [webURL, setWebURL] = useState("");
   const [streamToken, setStreamToken] = useState(null);
@@ -36,8 +38,7 @@ export default function HomePage(props) {
     });
     server.addEventListener("Users", (event) => {
       const obj = JSON.parse(event.data);
-      const format = date_format(obj['created']);
-      setUsers(obj['users']);
+      setUsers(obj['users'].slice(0, -1));
     });
     server.addEventListener("Message", (event) => {
       const obj = JSON.parse(event.data);
@@ -56,6 +57,11 @@ export default function HomePage(props) {
       const format = date_format(obj['created']);
       const message = (format + "PART: " + obj['user']);
       setMessages(messages => [...messages, message]);
+    });
+    server.addEventListener("Disconnect", (event) => {
+      console.log("Closing SSE connection");
+      server.close();
+      history.push('/login');
     });
     server.onerror = (_event) => {
       console.log("Connection lost, reestablishing");

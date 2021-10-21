@@ -10,30 +10,25 @@ import {
 } from "react-router-dom";
 
 const App = () => {
-  const [webURL, setWebURL] = useState("");
-  const [streamToken, setStreamToken] = useState("");
-  const [messageToken, setMessageToken] = useState("");
+  // const [webURL, setWebURL] = useState("");
+  // const [streamToken, setStreamToken] = useState("");
+  // const [messageToken, setMessageToken] = useState("");
 
-  function webURLHandler(newUrl) {
-    setWebURL(newUrl);
-  };
-  function messageTokenHandler(newMessageToken) {
-    setMessageToken(newMessageToken);
-  };
-  function streamTokenHandler(newStreamToken) {
-    setStreamToken(newStreamToken);
-  };
+  // function webURLHandler(newUrl) {
+  //   setWebURL(newUrl);
+  // };
+  // function messageTokenHandler(newMessageToken) {
+  //   setMessageToken(newMessageToken);
+  // };
+  // function streamTokenHandler(newStreamToken) {
+  //   setStreamToken(newStreamToken);
+  // };
 
   return (
     <Router>
       <Switch>
         <Route exact path="/">
-          <HomePage webURL={webURL}
-            webURLHandler={webURLHandler}
-            streamToken={streamToken}
-            streamTokenHandler={streamTokenHandler}
-            messageToken={messageToken}
-            messageTokenHandler={messageTokenHandler} />
+          <HomePage />
           {/* {streamToken === "" ? <LoginForm webURLHandler={webURLHandler}
                         messageTokenHandler={messageTokenHandler}
                         streamTokenHandler={streamTokenHandler} />
