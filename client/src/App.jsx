@@ -13,6 +13,7 @@ const App = () => {
     const [webURL, setWebURL] = useState("");
     const [streamToken, setStreamToken] = useState("");
     const [messageToken, setMessageToken] = useState("");
+    const [username, setUsername] = useState("");
 
     function webURLHandler(newUrl){
         setWebURL(newUrl);
@@ -23,6 +24,9 @@ const App = () => {
     function streamTokenHandler(newStreamToken){
         setStreamToken(newStreamToken);
     };
+    function usernameHandler(newUsername){
+        setUsername(newUsername);
+    };
 
     return (
         <Router>
@@ -30,30 +34,20 @@ const App = () => {
                 <Route exact path = "/">
                     {streamToken === "" ? <LoginForm webURLHandler={webURLHandler} 
                         messageTokenHandler={messageTokenHandler} 
-                        streamTokenHandler={streamTokenHandler}/> 
+                        streamTokenHandler={streamTokenHandler}
+                        usernameHandler={usernameHandler}/> 
                         : <HomePage webURL = {webURL}
                         streamToken = {streamToken}
                         streamTokenHandler={streamTokenHandler}
                         messageToken = {messageToken}
-                        messageTokenHandler={messageTokenHandler}/>}
+                        messageTokenHandler={messageTokenHandler}
+                        username = {username}/>}
                 </Route>
                 <Route exact path = "/login">
                     <LoginForm webURLHandler={webURLHandler} 
                         messageTokenHandler={messageTokenHandler} 
-                        streamTokenHandler={streamTokenHandler}/>
-                    {/* <div>
-                        <ul>
-                            <li>
-                                stream token : {streamToken}
-                            </li>
-                            <li>
-                                message token : {messageToken}
-                            </li>
-                            <li>
-                                weburl : {webURL}
-                            </li>
-                        </ul>
-                    </div> */}
+                        streamTokenHandler={streamTokenHandler}
+                        usernameHandler={usernameHandler}/>
                 </Route>
             </Switch>
         </Router>

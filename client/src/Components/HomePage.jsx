@@ -9,15 +9,10 @@ export default function HomePage(props) {
 
     const [messages, setMessages] = useState([]);
     const [users, setUsers] = useState([]);
-
-    const [firstLogIn, setFirstLogIn] = useState(false);
+    const [userToDelete, setUserToDelete] = useState("");
 
     const history = useHistory();
 
-    // want to pass users down into userlist
-
-    // console.log(props.webURL + "/stream/" + props.streamToken);
-    // console.log(messages);
     useEffect(()=>{
         const server = new EventSource(props.webURL + "/stream/" + props.streamToken);
         server.addEventListener("ServerStatus", (event) => {
@@ -29,13 +24,9 @@ export default function HomePage(props) {
             setMessages(messages => [...messages, message]);
         });
         server.addEventListener("Users", (event) => {
-            console.log(event.data);
-
             const obj = JSON.parse(event.data);
-            // console.log(obj['users']);
-            const format = date_format(obj['created']);
-            // console.log(format);
-            setUsers(obj['users']);
+            const userlist = obj['users'].slice(0, -1);
+            setUsers(userlist);
         });
         server.addEventListener("Message", (event) => {
             // console.log(event.data);
@@ -50,12 +41,7 @@ export default function HomePage(props) {
             const format = date_format(obj['created']);
             const message = (format + " JOIN: " + obj['user']);
             setMessages(messages => [...messages, message]);
-            if(firstLogIn === false){
-                setFirstLogIn(true);
-            }
-            else{
-                addUserHandler(obj['user']);
-            }
+            setUsers(users => [...users, obj['user']]);
         });
         server.addEventListener("Part", (event) => {
             // console.log(event.data);
@@ -63,7 +49,7 @@ export default function HomePage(props) {
             const format = date_format(obj['created']);
             const message = (format + " PART: " + obj['user']);
             setMessages(messages => [...messages, message]);
-            removeUserHandler(obj['user']);
+            setUserToDelete(obj['user']);
         });
         server.addEventListener("Disconnect", (event) => {
             console.log("Closing SSE connection");
@@ -74,24 +60,38 @@ export default function HomePage(props) {
             console.log("Connection lost, reestablishing");
         };
     }, []); 
+    
+    useEffect(() => {
+        window.addEventListener("beforeunload", alertUser);
+        return () => {
+          window.removeEventListener("beforeunload", alertUser);
+        };
+      }, []);
+      const alertUser = (e) => {
+        console.log("alert")
+        e.preventDefault();
+        e.returnValue = "";
+      };
+    
+    function handleRemoveItem (userList){
+        // assigning the list to temp variable
+        setUserToDelete("")
+        setUsers(userList);
+    };
+    // const RemovePeople = (e) =>{
+    //     const temp = [...users];
+    //     let index = users.findIndex(x => x === user);
+    //     temp.splice(index, 1);
 
-    // function updateUserHandler(newUserList){
-        
+    //     let name = e.data['user'];
+    //     setUsers(users.filter((user)=>(user !== name)))
     // };
-    function addUserHandler(user){
-        setUsers(users => [...users, user]);
-    };
-    function removeUserHandler(user){
-        for(let i = 0; i < users.length; i++){
-            if(user === users[i]){
-                users.splice(i, 1);
-            }
-        }
-    };
+
     function date_format(timestamp) {
         var date = new Date(timestamp * 1000);
         return date.toLocaleDateString("en-US") + " " + date.toLocaleTimeString("en-US");
     }
+
     return (
         <div>
             <Container>
@@ -103,12 +103,9 @@ export default function HomePage(props) {
                         <MessageList messages = {messages} />
                     </Col>
                     <Col md={4}>
-                        {/* <ul>
-                            {users.map((user) => (
-                                <li>{user}</li>
-                            ))}
-                        </ul> */}
-                        <UserList users = {users}/>
+                        <UserList users = {users} 
+                                handleRemoveItem = {handleRemoveItem}
+                                userToDelete = {userToDelete}/>
                     </Col>
                 </Row>
             </Container>
