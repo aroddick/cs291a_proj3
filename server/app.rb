@@ -217,7 +217,7 @@ post '/login' do
       # password and username correct
       else
         # check and update the message and stream tokens
-        if(user_stream_token.has_value?(params['username']))
+        if(user_stream_token.has_value?([params['username'], true]))
           status 409
           return
         end

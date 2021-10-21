@@ -37,7 +37,12 @@ export default function Login(props) {
                 }
             })
             .catch((error) => {
-                if(error.response.status === 422){
+              console.log(error)
+                if (error.response == null) {
+                  console.log("server error")
+                  alert.error("server error")
+                }
+                else if(error.response.status === 422){
                     console.log("params arent valid");
                     alert.error("params arent valid");
                 }

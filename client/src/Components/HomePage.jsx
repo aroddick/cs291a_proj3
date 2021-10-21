@@ -3,7 +3,6 @@ import MessageList from './MessageList/MessageList';
 import Compose from "./Compose/Compose";
 import UserList from './UserList/UserList';
 import Login from './LoginForm/LoginForm';
-import {Container, Row, Col} from "react-bootstrap";
 import { useHistory } from "react-router";
 
 export default function HomePage(props) {
