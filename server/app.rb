@@ -110,7 +110,7 @@ def send_users(connection:, user_stream_token:)
   event_id = SecureRandom.uuid
   user_event =
     "data: #{{
-      "users" => user_stream_token.values.map{ |value| value[0]},
+      "users" => $connections.keys,
       "created" => Time.now.to_i
     }.to_json}\nevent: Users\nid: #{event_id}\n\n"
   send_message(id: event_id, event: user_event, connection: connection)
@@ -154,6 +154,8 @@ get '/stream/:token', provides: 'text/event-stream' do
       # stream token
       stream(:keep_open) do |connection|
 
+        # place connection into connections
+        $connections[username] = connection
         # connection << "Welcome\n\n"
         # since this is the first time the connection is being added, will 
         # want to notify other streams that new connection was added
@@ -176,9 +178,6 @@ get '/stream/:token', provides: 'text/event-stream' do
             match = true
           end
         end
-
-        # place connection into connections
-        $connections[username] = connection
 
         # broadcast join message to all other users
         send_join_event(username: username)

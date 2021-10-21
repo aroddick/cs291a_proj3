@@ -1,0 +1,32 @@
+.message {
+  width: 80%;
+  flex-direction: column;
+  max-height: 100%;
+  display: flex;
+  padding: 1em;
+}
+
+.red {
+  color: red;
+}
+
+.green{
+  color: green;
+}
+
+.users {
+  border: 1px solid black;
+  width: 20%;
+  margin: 1em;
+  padding: 0.5em;
+}
+
+.container {
+  height: 100vh;
+}
+
+.content {
+  max-height: 100%;
+  height: 100%;
+  display: flex;
+}

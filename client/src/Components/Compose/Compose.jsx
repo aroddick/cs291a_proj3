@@ -3,6 +3,7 @@ import Form from "react-bootstrap/Form";
 import Button from "react-bootstrap/Button";
 import axios from 'axios';
 import { useAlert } from 'react-alert';
+import classes from './Compose.module.css';
 
 export default function Compose(props) {
   const [message, setMessage] = useState("");
@@ -40,24 +41,34 @@ export default function Compose(props) {
       });
   }
   return (
-    <div>
-      <Form onSubmit={handleSubmit}>
+    <div className={classes.container}>
+      <form onSubmit={handleSubmit} className={classes.messageBox}>
+        <input
+          style={{ width: '100%' }}
+          type="text"
+          placeholder={props.disconnected ? "Please connect to send messages" : "Enter Message"}
+          value={message}
+          onChange={(e) => setMessage(e.target.value)}
+          disabled={props.disconnected}
+        />
+      </form>
+      {/* <Form onSubmit={handleSubmit} style={{width: '100%'}}>
         <Form.Group size="lg" controlId="text">
-          <Form.Label>Send a Message</Form.Label>
           <Form.Control
             type="text"
-            placeholder="Enter Message"
+            placeholder={props.disconnected ? "Please connect to send messages" : "Enter Message"}
             value={message}
             onChange={(e) => setMessage(e.target.value)}
+            disabled={props.disconnected}
           />
         </Form.Group>
-        <Button
+        {/* <Button
           block
           size="lg"
           type="submit">
           Send
         </Button>
-      </Form>
+      </Form> */}
     </div>
   )
 };

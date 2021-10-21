@@ -1,0 +1,21 @@
+.container {
+  overflow-y: scroll;
+  flex: auto;
+}
+
+.container li {
+  list-style: none;
+}
+
+h2 {
+  /* text-align: center; */
+}
+
+ul {
+  /* padding-inline-start: 1em; */
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 0;
+  height: 100%;
+}

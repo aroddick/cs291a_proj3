@@ -1,0 +1,15 @@
+.container {
+  width: 100%;
+  margin: 1rem;
+  margin-left: 0;
+}
+
+.messageBox {
+  width: 100%;
+
+}
+
+.messageBox > input {
+  padding: 1rem;
+  box-sizing: border-box;
+}

@@ -1,4 +1,5 @@
 import React from 'react';
+import classes from './UserList.module.css';
 
 export default function UserList(props) {
 
@@ -10,7 +11,7 @@ export default function UserList(props) {
   }
 
   return (
-    <div>
+    <div className={classes.container}>
       <ul>
           {temp.map((user) => (
             <li>{user}</li>
