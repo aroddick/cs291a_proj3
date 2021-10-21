@@ -86,7 +86,7 @@ export default function HomePage() {
       console.log("Connection lost, reestablishing");
       setDisconnected(true)
     };
-  }, streamToken);
+  }, [webURL, streamToken]);
 
   useEffect(() => {
     window.addEventListener("beforeunload", alertUser);
