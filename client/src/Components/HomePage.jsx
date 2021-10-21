@@ -9,6 +9,9 @@ export default function HomePage(props) {
     const [messages, setMessages] = useState([]);
     const [users, setUsers] = useState([]);
 
+    const [firstLogIn, setFirstLogIn] = useState(false);
+    // want to pass users down into userlist
+
     // console.log(props.webURL + "/stream/" + props.streamToken);
     // console.log(messages);
     useEffect(()=>{
@@ -22,7 +25,8 @@ export default function HomePage(props) {
             setMessages(messages => [...messages, message]);
         });
         server.addEventListener("Users", (event) => {
-            // console.log(event.data);
+            console.log(event.data);
+
             const obj = JSON.parse(event.data);
             // console.log(obj['users']);
             const format = date_format(obj['created']);
@@ -40,21 +44,41 @@ export default function HomePage(props) {
             // console.log(event.data);
             const obj = JSON.parse(event.data);
             const format = date_format(obj['created']);
-            const message = (format + "JOIN: " + obj['user']);
+            const message = (format + " JOIN: " + obj['user']);
             setMessages(messages => [...messages, message]);
+            if(firstLogIn === false){
+                setFirstLogIn(true);
+            }
+            else{
+                addUserHandler(obj['user']);
+            }
         });
         server.addEventListener("Part", (event) => {
             // console.log(event.data);
             const obj = JSON.parse(event.data);
             const format = date_format(obj['created']);
-            const message = (format + "PART: " + obj['user']);
+            const message = (format + " PART: " + obj['user']);
             setMessages(messages => [...messages, message]);
+            removeUserHandler(obj['user']);
         });
         server.onerror = (_event) => {
             console.log("Connection lost, reestablishing");
         };
     }, []); 
 
+    function updateUserHandler(newUserList){
+        
+    };
+    function addUserHandler(user){
+        setUsers(users => [...users, user]);
+    };
+    function removeUserHandler(user){
+        for(let i = 0; i < users.length; i++){
+            if(user === users[i]){
+                users.splice(i, 1);
+            }
+        }
+    };
     function date_format(timestamp) {
         var date = new Date(timestamp * 1000);
         return date.toLocaleDateString("en-US") + " " + date.toLocaleTimeString("en-US");
@@ -65,9 +89,9 @@ export default function HomePage(props) {
                 <Row>
                     <Col md={8}>
                         <Compose webURL = {props.webURL}
-                        messageToken = {props.messageToken}
-                        messageTokenHandler={props.messageTokenHandler}/>
-                        <MessageList messages = {messages}/>
+                                messageToken = {props.messageToken}
+                                messageTokenHandler={props.messageTokenHandler}/>
+                        <MessageList messages = {messages} />
                     </Col>
                     <Col md={4}>
                         {/* <ul>

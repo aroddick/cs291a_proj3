@@ -41,7 +41,7 @@ const App = () => {
                     <LoginForm webURLHandler={webURLHandler} 
                         messageTokenHandler={messageTokenHandler} 
                         streamTokenHandler={streamTokenHandler}/>
-                    <div>
+                    {/* <div>
                         <ul>
                             <li>
                                 stream token : {streamToken}
@@ -53,7 +53,7 @@ const App = () => {
                                 weburl : {webURL}
                             </li>
                         </ul>
-                    </div>
+                    </div> */}
                 </Route>
             </Switch>
         </Router>
