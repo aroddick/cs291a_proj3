@@ -1,17 +1,13 @@
-import React, { useState } from 'react'
+import React from 'react'
 
-const UserList = () => {
-  const [usernames, setUsernames] = useState([])
-
+export default function UserList(props) {
   return (
     <div>
       <ul>
-        {usernames.map((userName) => (
-          <li>{userName}</li>
-        ))}
+          {props.users.map((user) => (
+              <li>{user}</li>
+          ))}
       </ul>
     </div>
   )
 }
-
-export default UserList;

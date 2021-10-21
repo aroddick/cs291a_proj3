@@ -67,18 +67,15 @@ export default function HomePage(props) {
                         <Compose webURL = {props.webURL}
                         messageToken = {props.messageToken}
                         messageTokenHandler={props.messageTokenHandler}/>
-                        <ul>
-                            {messages.map((message) => (
-                                <li>{message}</li>
-                            ))}
-                        </ul>
+                        <MessageList messages = {messages}/>
                     </Col>
                     <Col md={4}>
-                        <ul>
+                        {/* <ul>
                             {users.map((user) => (
                                 <li>{user}</li>
                             ))}
-                        </ul>
+                        </ul> */}
+                        <UserList users = {users}/>
                     </Col>
                 </Row>
             </Container>
