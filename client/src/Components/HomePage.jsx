@@ -3,6 +3,7 @@ import MessageList from './MessageList/MessageList';
 import Compose from "./Compose/Compose";
 import UserList from './UserList/UserList';
 import {Container, Row, Col} from "react-bootstrap";
+import { useHistory } from "react-router";
 
 export default function HomePage(props) {
 
@@ -10,6 +11,9 @@ export default function HomePage(props) {
     const [users, setUsers] = useState([]);
 
     const [firstLogIn, setFirstLogIn] = useState(false);
+
+    const history = useHistory();
+
     // want to pass users down into userlist
 
     // console.log(props.webURL + "/stream/" + props.streamToken);
@@ -61,14 +65,19 @@ export default function HomePage(props) {
             setMessages(messages => [...messages, message]);
             removeUserHandler(obj['user']);
         });
+        server.addEventListener("Disconnect", (event) => {
+            console.log("Closing SSE connection");
+            server.close();
+            history.push('/login');
+        });
         server.onerror = (_event) => {
             console.log("Connection lost, reestablishing");
         };
     }, []); 
 
-    function updateUserHandler(newUserList){
+    // function updateUserHandler(newUserList){
         
-    };
+    // };
     function addUserHandler(user){
         setUsers(users => [...users, user]);
     };
