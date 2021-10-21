@@ -34,7 +34,6 @@ export default function Login(props) {
                     alert.success("login successful");
                     props.messageTokenHandler(response.data.message_token);
                     props.streamTokenHandler(response.data.stream_token);
-                    props.usernameHandler(username);
                 }
             })
             .catch((error) => {

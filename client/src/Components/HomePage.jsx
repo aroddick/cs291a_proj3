@@ -3,18 +3,21 @@ import MessageList from './MessageList/MessageList';
 import Compose from "./Compose/Compose";
 import UserList from './UserList/UserList';
 import Login from './LoginForm/LoginForm';
-import { useHistory } from "react-router";
+// import { useAlert } from 'react-alert';
+// import { useHistory } from "react-router";
 
 export default function HomePage() {
 
   const [messages, setMessages] = useState([]);
   const [users, setUsers] = useState([]);
-  const history = useHistory();
   const [userToDelete, setUserToDelete] = useState("");
 
   const [webURL, setWebURL] = useState("");
   const [streamToken, setStreamToken] = useState(null);
   const [messageToken, setMessageToken] = useState(null);
+
+//   const history = useHistory();
+//   const alert = useAlert()
 
   function webURLHandler(newUrl) {
     setWebURL(newUrl);
@@ -35,6 +38,7 @@ export default function HomePage() {
       const format = date_format(obj['created']);
       const message = (format + " Status: " + obj['status']);
       setMessages(messages => [...messages, message]);
+    //   alert.info("New Message!");
     });
     server.addEventListener("Users", (event) => {
       const obj = JSON.parse(event.data);
@@ -45,25 +49,30 @@ export default function HomePage() {
       const format = date_format(obj['created']);
       const message = (format + " (" + obj['user'] + ") " + obj['message']);
       setMessages(messages => [...messages, message]);
+    //   alert.info("New Message!");
     });
     server.addEventListener("Join", (event) => {
       const obj = JSON.parse(event.data);
       const format = date_format(obj['created']);
-      const message = (format + "JOIN: " + obj['user']);
+      const message = (format + " JOIN: " + obj['user']);
       setMessages(messages => [...messages, message]);
+    //   alert.info("New Message!");
       setUsers(users => [...users, obj['user']]);
     });
     server.addEventListener("Part", (event) => {
       const obj = JSON.parse(event.data);
       const format = date_format(obj['created']);
-      const message = (format + "PART: " + obj['user']);
+      const message = (format + " PART: " + obj['user']);
       setMessages(messages => [...messages, message]);
+    //   alert.info("New Message!");
       setUserToDelete(obj['user']);
     });
     server.addEventListener("Disconnect", (event) => {
       console.log("Closing SSE connection");
       server.close();
-      history.push('/login');
+      // history.push('/login');
+      setStreamToken(null);
+      setMessageToken(null);
     });
     server.onerror = (_event) => {
       console.log("Connection lost, reestablishing");
@@ -76,10 +85,12 @@ export default function HomePage() {
       window.removeEventListener("beforeunload", alertUser);
     };
   }, []);
+
   const alertUser = (e) => {
     console.log("alert")
     e.preventDefault();
     e.returnValue = "";
+
   };
 
   function handleRemoveItem (userList){
@@ -104,6 +115,13 @@ export default function HomePage() {
       <UserList usernames={users} 
                 handleRemoveItem = {handleRemoveItem}
                 userToDelete = {userToDelete}/>
+        {/* <Compose webURL = {props.webURL}
+                messageToken = {props.messageToken}
+                messageTokenHandler={props.messageTokenHandler}/>
+        <MessageList messages = {messages} />
+        <UserList users = {users} 
+                handleRemoveItem = {handleRemoveItem}
+                userToDelete = {userToDelete}/> */}
     </div>
   );
 }
