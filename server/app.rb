@@ -143,7 +143,6 @@ options '*' do
 end
 
 get '/stream/:token', provides: 'text/event-stream' do
-  PP.pp(params)
   if(user_stream_token.has_key?(params['token']))
     if(user_stream_token[params['token']][1] == false)
       user_stream_token[params['token']][1] = true
@@ -196,6 +195,8 @@ get '/stream/:token', provides: 'text/event-stream' do
       status 409
     end
   else
+    PP.pp(request);
+    PP.pp(user_stream_token);
     status 403
   end
 end
@@ -216,7 +217,7 @@ post '/login' do
         return
       # password and username correct
       else
-        # check and update the message and stream tokens
+        # check if stream is currently open
         if(user_stream_token.has_value?([params['username'], true]))
           status 409
           return
@@ -226,6 +227,12 @@ post '/login' do
     else
       registered[params['username']] = params['password']
     end
+
+    # 
+    # deletes stream token user pair from db
+    user_stream_token.delete(user_stream_token.key([params['username'], false]))
+    # deletes message token user pair from db
+    user_message_token.delete(user_message_token.key(params['username']))
 
     # no stream exists yet, so create new streams and log in
     message_token = SecureRandom.uuid
@@ -252,13 +259,19 @@ post '/message' do
   headers 'Access-Control-Expose-Headers' => 'token'
   # check if message was provided
   if(request.params.keys.length == 1 && request.params['message'] != nil && request.params['message'] != "")
+    PP.pp(request.params['message'])
     # header not provided
     if(request.env['HTTP_AUTHORIZATION'] == nil)
       puts('header not provided')
       status 403
+      return
     else
       PP.pp(request.env['HTTP_AUTHORIZATION'])
       authorization = request.env['HTTP_AUTHORIZATION'].split(' ')
+      if(authorization[0] != "Bearer")
+        status 403
+        return
+      end
       token = authorization[1]
       PP.pp(token)
       if(user_message_token.has_key?(token))
@@ -275,10 +288,7 @@ post '/message' do
               }.to_json}\nevent: Disconnect\nid: #{event_id}\n\n"
             send_message(id: event_id, event: disconnect_event, connection: connection_to_remove)
             connection_to_remove.close()
-            # deletes stream token user pair from db
-            user_stream_token.delete(user_stream_token.key([user, true]))
-            # deletes message token user pair from db
-            user_message_token.delete(token)
+            user_stream_token[user_stream_token.key([user, true])][1] = false
 
           elsif messageArray[0] == '/kick' && messageArray.length == 2
             if $connections.has_key?(messageArray[1])
