@@ -187,6 +187,7 @@ get '/stream/:token', provides: 'text/event-stream' do
           username = $connections.key(connection)
           send_part_event(username: username)
           $connections.delete(username)
+          user_stream_token[user_stream_token.key([username, true])][1] = false
         end
       end
       
@@ -287,13 +288,11 @@ post '/message' do
               }.to_json}\nevent: Disconnect\nid: #{event_id}\n\n"
             send_message(id: event_id, event: disconnect_event, connection: connection_to_remove)
             connection_to_remove.close()
-            user_stream_token[user_stream_token.key([user, true])][1] = false
 
           elsif messageArray[0] == '/kick' && messageArray.length == 2
             if $connections.has_key?(messageArray[1])
               connection_to_remove = $connections[messageArray[1]]
               send_kick_event(username1: user, username2: messageArray[1])
-              user_stream_token[user_stream_token.key([messageArray[1], true])][1] = false
               connection_to_remove.close()
             else
               status 409
@@ -301,7 +300,6 @@ post '/message' do
             end
           elsif message == '/reconnect'
             connection_to_remove = $connections[user]
-            user_stream_token[user_stream_token.key([user, true])][1] = false
             connection_to_remove.close()
           else
             messageEvent = 

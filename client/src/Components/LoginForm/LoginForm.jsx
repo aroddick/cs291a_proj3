@@ -23,6 +23,7 @@ export default function Login(props) {
     event.preventDefault();
     console.log('You clicked submit');
     const info = new FormData();
+    props.usernameHandler(username);
     info.append('username', username);
     info.append('password', password);
     await axios.post(webURL + "/login", info)

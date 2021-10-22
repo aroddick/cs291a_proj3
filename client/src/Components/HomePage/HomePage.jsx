@@ -11,8 +11,8 @@ export default function HomePage() {
 
   const [messages, setMessages] = useState([]);
   const [users, setUsers] = useState([]);
-  const [userToDelete, setUserToDelete] = useState("");
   const [disconnected, setDisconnected] = useState(true)
+  const [username, setUsername] = useState()
 
   const [webURL, setWebURL] = useState("");
   const [streamToken, setStreamToken] = useState(null);
@@ -30,6 +30,9 @@ export default function HomePage() {
   function streamTokenHandler(newStreamToken) {
     setStreamToken(newStreamToken);
   };
+  function usernameHandler(username) {
+    setUsername(username)
+  }
 
   useEffect(() => {
     if (streamToken == null)
@@ -47,7 +50,12 @@ export default function HomePage() {
     });
     server.addEventListener("Users", (event) => {
       const obj = JSON.parse(event.data);
-      setUsers(obj['users'].slice(0, -1));
+      // setUsers(obj['users'].slice(0, -1));
+      const temp = [...obj['users']].filter((name) => name !== username)
+      console.log(obj['users'])
+      console.log(temp)
+      console.log(username)
+      setUsers(temp);
     });
     server.addEventListener("Message", (event) => {
       const obj = JSON.parse(event.data);
@@ -69,8 +77,7 @@ export default function HomePage() {
       const format = date_format(obj['created']);
       const message = (format + " PART: " + obj['user']);
       setMessages(messages => [...messages, message]);
-      //   alert.info("New Message!");
-      setUserToDelete(obj['user']);
+      setUsers(oldUsers => oldUsers.filter((name) => name !== obj['user']));
     });
     server.addEventListener("Disconnect", (event) => {
       console.log("Closing SSE connection");
@@ -102,11 +109,6 @@ export default function HomePage() {
 
   };
 
-  function handleRemoveItem(userList) {
-    setUserToDelete("")
-    setUsers(userList);
-  };
-
   function date_format(timestamp) {
     var date = new Date(timestamp * 1000);
     return date.toLocaleDateString("en-US") + " " + date.toLocaleTimeString("en-US");
@@ -116,7 +118,8 @@ export default function HomePage() {
     <div className={classes.container}>
       {streamToken === null && <Login webURLHandler={webURLHandler}
         messageTokenHandler={messageTokenHandler}
-        streamTokenHandler={streamTokenHandler} />}
+        streamTokenHandler={streamTokenHandler}
+        usernameHandler={usernameHandler} />}
       {streamToken && <div className={classes.content}>
         <div className={classes.message}>
           <h2 className={disconnected ? classes.red : classes.green }>Messages</h2>
@@ -129,9 +132,7 @@ export default function HomePage() {
         </div>
         <div className={classes.users}>
           <h2>Users</h2>
-          <UserList usernames={users}
-            handleRemoveItem={handleRemoveItem}
-            userToDelete={userToDelete} />
+          <UserList usernames={users} />
         </div>
       </div>}
       
