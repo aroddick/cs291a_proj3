@@ -36,8 +36,14 @@ export default function Compose(props) {
         }
       })
       .catch((error) => {
-        console.log('error: ' + error);
-        alert.error("Error message")
+        if (error.response != null && error.response.status === 409) {
+          console.log("incorrect token")
+          props.messageTokenHandler(error.response.headers.token);
+          alert.error("User stream not open. Refreshing tokens...")
+        } else {
+          alert.error("Error sending message")
+        }
+        
       });
   }
   return (

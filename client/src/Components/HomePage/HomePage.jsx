@@ -21,6 +21,8 @@ export default function HomePage() {
   //   const history = useHistory();
   //   const alert = useAlert()
 
+  console.log(messageToken)
+
   function webURLHandler(newUrl) {
     setWebURL(newUrl);
   };
